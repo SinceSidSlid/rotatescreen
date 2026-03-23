@@ -1,0 +1,6 @@
+{
+  "calendarIntervalSeconds": 5,
+  "noteIntervalSeconds": 5,
+  "calendarEmbedUrl": "https://calendar.google.com/calendar/embed?src=YOUR_ID",
+  "port": 3000
+}

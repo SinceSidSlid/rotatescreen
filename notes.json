@@ -1,0 +1,14 @@
+[
+  {
+    "id": "example-note-1",
+    "title": "Today's Focus",
+    "body": "Fix the stuff",
+    "createdAt": "2026-03-23T00:00:00.000Z"
+  },
+  {
+    "id": "2a4a5476-ff8f-4833-b91a-6aec28e06a72",
+    "title": "Testing message",
+    "body": "This is a test message",
+    "createdAt": "2026-03-23T17:11:34.346Z"
+  }
+]

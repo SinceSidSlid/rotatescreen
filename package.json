@@ -1,0 +1,16 @@
+{
+  "name": "electron-kiosk",
+  "version": "1.0.0",
+  "description": "Kiosk app that rotates between Google Calendar and sticky notes",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "server": "node server-standalone.js"
+  },
+  "dependencies": {
+    "electron": "^35.0.0",
+    "express": "^4.21.0",
+    "uuid": "^11.1.0"
+  }
+}
