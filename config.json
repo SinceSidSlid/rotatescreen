@@ -1,6 +1,6 @@
 {
   "calendarIntervalSeconds": 5,
   "noteIntervalSeconds": 5,
-  "calendarEmbedUrl": "https://calendar.google.com/calendar/embed?src=YOUR_ID",
+  "calendarEmbedUrl": "https://calendar.google.com/calendar/embed?src=e3e6dbd164cb40955b2f7341e19880a00c993a0cd8dbc325337b4e4bf268c7b6%40group.calendar.google.com&ctz=America%2FNew_York",
   "port": 3000
 }
