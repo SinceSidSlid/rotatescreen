@@ -38,11 +38,29 @@ function createWindow() {
   // Handle webview new-window requests (Google sign-in popups)
   mainWindow.webContents.on('did-attach-webview', (event, webContents) => {
     webContents.setWindowOpenHandler(({ url }) => {
-      // Open Google auth URLs in a new Electron window with the same session
-      if (url.includes('accounts.google.com') || url.includes('google.com/signin')) {
+      // Open any Google URL in a new Electron window with the same session
+      const authWin = new BrowserWindow({
+        width: 600,
+        height: 750,
+        parent: mainWindow,
+        webPreferences: {
+          partition: 'persist:google',
+        },
+      });
+      authWin.loadURL(url);
+      authWin.on('closed', () => {
+        mainWindow.webContents.send('reload-calendar');
+      });
+      return { action: 'deny' };
+    });
+
+    // Also handle in-page navigation to sign-in
+    webContents.on('will-navigate', (event, url) => {
+      if (url.includes('accounts.google.com')) {
+        event.preventDefault();
         const authWin = new BrowserWindow({
-          width: 500,
-          height: 700,
+          width: 600,
+          height: 750,
           parent: mainWindow,
           webPreferences: {
             partition: 'persist:google',
@@ -50,12 +68,9 @@ function createWindow() {
         });
         authWin.loadURL(url);
         authWin.on('closed', () => {
-          // Reload the webview after sign-in
           mainWindow.webContents.send('reload-calendar');
         });
-        return { action: 'deny' };
       }
-      return { action: 'deny' };
     });
   });
 

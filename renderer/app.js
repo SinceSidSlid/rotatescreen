@@ -64,6 +64,7 @@
           const webview = document.createElement('webview');
           webview.src = slide.url;
           webview.setAttribute('partition', 'persist:google');
+          webview.setAttribute('allowpopups', '');
           webview.style.width = '100%';
           webview.style.height = '100%';
           el.appendChild(webview);
