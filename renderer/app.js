@@ -61,10 +61,12 @@
             '<div class="calendar-error-body">Open the management UI and set your Google Calendar embed URL in the Config section.</div>';
           el.appendChild(err);
         } else {
-          const iframe = document.createElement('iframe');
-          iframe.src = slide.url;
-          iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-          el.appendChild(iframe);
+          const webview = document.createElement('webview');
+          webview.src = slide.url;
+          webview.setAttribute('partition', 'persist:google');
+          webview.style.width = '100%';
+          webview.style.height = '100%';
+          el.appendChild(webview);
         }
       } else {
         el.classList.add('slide-note');
