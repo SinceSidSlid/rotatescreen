@@ -165,4 +165,12 @@
 
   // Poll every 10 seconds
   setInterval(poll, 10000);
+
+  // Reload calendar webview after Google sign-in
+  if (window.kioskAPI && window.kioskAPI.onReloadCalendar) {
+    window.kioskAPI.onReloadCalendar(() => {
+      const webview = document.querySelector('webview');
+      if (webview) webview.reload();
+    });
+  }
 })();

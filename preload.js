@@ -1,4 +1,4 @@
-const { contextBridge } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
@@ -13,4 +13,5 @@ function loadNotes() {
 contextBridge.exposeInMainWorld('kioskAPI', {
   getConfig: () => loadConfig(),
   getNotes: () => loadNotes(),
+  onReloadCalendar: (callback) => ipcRenderer.on('reload-calendar', callback),
 });
