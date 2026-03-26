@@ -49,7 +49,8 @@ function createWindow() {
       });
       authWin.loadURL(url);
       authWin.on('closed', () => {
-        mainWindow.webContents.send('reload-calendar');
+        // Reload the webview directly
+        webContents.loadURL(webContents.getURL());
       });
       return { action: 'deny' };
     });
@@ -68,7 +69,7 @@ function createWindow() {
         });
         authWin.loadURL(url);
         authWin.on('closed', () => {
-          mainWindow.webContents.send('reload-calendar');
+          webContents.loadURL(webContents.getURL());
         });
       }
     });
