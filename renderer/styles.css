@@ -134,7 +134,8 @@ html, body {
 .note-body h1 { font-size: 1.4em; margin-bottom: 0.3em; color: #2a2a2a; }
 .note-body h2 { font-size: 1.2em; margin-bottom: 0.3em; color: #2a2a2a; }
 .note-body h3 { font-size: 1.05em; margin-bottom: 0.3em; color: #2a2a2a; }
-.note-body p { margin-bottom: 0.4em; }
+.note-body p { margin-bottom: 0.6em; }
+.note-body p:has(> br:only-child) { min-height: 1em; }
 .note-body ul, .note-body ol { margin-left: 1em; margin-bottom: 0.4em; }
 .note-body strong { font-weight: 700; }
 .note-body em { font-style: italic; }
