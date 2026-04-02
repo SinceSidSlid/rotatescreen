@@ -140,6 +140,7 @@ function managementHTML(port) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kiosk Management</title>
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/lucide-static@0.460.0/font/lucide.min.css" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; }
@@ -153,7 +154,8 @@ function managementHTML(port) {
   .note-card .editor-container { margin-top: 4px; }
   .note-card .ql-container { min-height: 60px; font-size: 14px; }
   .note-card .actions { margin-top: 10px; display: flex; gap: 8px; }
-  button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+  button .icon-lucide { font-size: 16px; }
   .btn-save { background: #2563eb; color: #fff; }
   .btn-save:hover { background: #1d4ed8; }
   .btn-delete { background: #dc2626; color: #fff; }
@@ -193,7 +195,7 @@ function managementHTML(port) {
   <div class="editor-container">
     <div id="new-body-editor"></div>
   </div>
-  <button class="btn-add" onclick="addNote()">&#43; Add Note</button>
+  <button class="btn-add" onclick="addNote()"><i class="icon-lucide icon-plus"></i> Add Note</button>
 </div>
 
 <h2>Config</h2>
@@ -204,7 +206,7 @@ function managementHTML(port) {
   <input type="number" id="cfg-note-interval" min="5">
   <label>Calendar Embed URL</label>
   <input type="text" id="cfg-calendar">
-  <button class="btn-save" style="margin-top:12px" onclick="saveConfig()">&#128190; Save Config</button>
+  <button class="btn-save" style="margin-top:12px" onclick="saveConfig()"><i class="icon-lucide icon-save"></i> Save Config</button>
   <div id="config-status" class="status"></div>
 </div>
 
@@ -212,8 +214,8 @@ function managementHTML(port) {
 <div class="config-section">
   <p id="update-info" style="font-size:14px;color:#666;">Click below to check for updates.</p>
   <div style="display:flex;gap:8px;margin-top:12px;">
-    <button class="btn-save" onclick="checkUpdate()">&#128269; Check for Updates</button>
-    <button class="btn-add" id="apply-btn" onclick="applyUpdate()" style="display:none;">&#9889; Apply Update &amp; Restart</button>
+    <button class="btn-save" onclick="checkUpdate()"><i class="icon-lucide icon-refresh-cw"></i> Check for Updates</button>
+    <button class="btn-add" id="apply-btn" onclick="applyUpdate()" style="display:none;"><i class="icon-lucide icon-download"></i> Apply Update &amp; Restart</button>
   </div>
   <div id="update-status" class="status"></div>
 </div>
@@ -266,8 +268,8 @@ async function loadNotes() {
         <div class="note-body-editor" id="body-editor-\${n.id}"></div>
       </div>
       <div class="actions">
-        <button class="btn-save" onclick="saveNote('\${n.id}', this)">&#128190; Save</button>
-        <button class="btn-delete" onclick="deleteNote('\${n.id}')">&#128465; Delete</button>
+        <button class="btn-save" onclick="saveNote('\${n.id}', this)"><i class="icon-lucide icon-save"></i> Save</button>
+        <button class="btn-delete" onclick="deleteNote('\${n.id}')"><i class="icon-lucide icon-trash-2"></i> Delete</button>
       </div>
     </div>
   \`).join('');
