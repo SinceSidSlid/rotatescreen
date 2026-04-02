@@ -5,7 +5,26 @@ const fs = require('fs');
 
 let mainWindow;
 
+const DEFAULT_CONFIG = {
+  calendarIntervalSeconds: 30,
+  noteIntervalSeconds: 10,
+  calendarEmbedUrl: 'https://calendar.google.com/calendar',
+  port: 3000,
+};
+
+function ensureDataFiles() {
+  const configPath = path.join(__dirname, 'config.json');
+  const notesPath = path.join(__dirname, 'notes.json');
+  if (!fs.existsSync(configPath)) {
+    fs.writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2), 'utf-8');
+  }
+  if (!fs.existsSync(notesPath)) {
+    fs.writeFileSync(notesPath, '[]', 'utf-8');
+  }
+}
+
 function loadConfig() {
+  ensureDataFiles();
   return JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf-8'));
 }
 
