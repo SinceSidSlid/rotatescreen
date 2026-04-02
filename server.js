@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const { execSync, spawn } = require('child_process');
 const os = require('os');
 
 const NOTES_PATH = path.join(__dirname, 'notes.json');
@@ -93,6 +94,33 @@ function startServer(port) {
       res.json(config);
     });
 
+    // Check for updates (git fetch + status)
+    app.get('/api/update/check', (req, res) => {
+      try {
+        execSync('git fetch', { cwd: __dirname, timeout: 15000 });
+        const status = execSync('git status -uno', { cwd: __dirname, timeout: 5000 }).toString();
+        const behind = status.includes('behind');
+        res.json({ updateAvailable: behind, status: status.trim() });
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // Pull updates and restart the app
+    app.post('/api/update/apply', (req, res) => {
+      try {
+        const pullResult = execSync('git pull', { cwd: __dirname, timeout: 30000 }).toString();
+        execSync('npm install --production', { cwd: __dirname, timeout: 60000 });
+        res.json({ success: true, output: pullResult.trim() });
+        // Restart the app after a short delay to let the response send
+        setTimeout(() => {
+          process.exit(0);
+        }, 1000);
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
     const server = app.listen(port, '0.0.0.0', () => {
       console.log(`Management server at http://${getLocalIP()}:${port}`);
       resolve();
@@ -176,6 +204,16 @@ function managementHTML(port) {
   <input type="text" id="cfg-calendar">
   <button class="btn-save" style="margin-top:12px" onclick="saveConfig()">Save Config</button>
   <div id="config-status" class="status"></div>
+</div>
+
+<h2>Updates</h2>
+<div class="config-section">
+  <p id="update-info" style="font-size:14px;color:#666;">Click below to check for updates.</p>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn-save" onclick="checkUpdate()">Check for Updates</button>
+    <button class="btn-add" id="apply-btn" onclick="applyUpdate()" style="display:none;">Apply Update &amp; Restart</button>
+  </div>
+  <div id="update-status" class="status"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
@@ -308,6 +346,53 @@ async function saveConfig() {
     el.className = 'status success';
   } catch (e) {
     el.textContent = 'Failed to save config.';
+    el.className = 'status error';
+  }
+}
+
+async function checkUpdate() {
+  const info = document.getElementById('update-info');
+  const el = document.getElementById('update-status');
+  const btn = document.getElementById('apply-btn');
+  info.textContent = 'Checking...';
+  el.className = 'status';
+  btn.style.display = 'none';
+  try {
+    const res = await fetch('/api/update/check');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (data.updateAvailable) {
+      info.textContent = 'Update available!';
+      btn.style.display = 'inline-block';
+    } else {
+      info.textContent = 'Already up to date.';
+    }
+  } catch (e) {
+    info.textContent = 'Failed to check for updates.';
+    el.textContent = e.message;
+    el.className = 'status error';
+  }
+}
+
+async function applyUpdate() {
+  const info = document.getElementById('update-info');
+  const el = document.getElementById('update-status');
+  const btn = document.getElementById('apply-btn');
+  info.textContent = 'Applying update...';
+  btn.style.display = 'none';
+  try {
+    const res = await fetch('/api/update/apply', { method: 'POST' });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    el.textContent = 'Update applied! App is restarting...';
+    el.className = 'status success';
+    // Poll until the server comes back
+    setTimeout(function poll() {
+      fetch('/api/config').then(() => location.reload()).catch(() => setTimeout(poll, 2000));
+    }, 3000);
+  } catch (e) {
+    info.textContent = 'Update failed.';
+    el.textContent = e.message;
     el.className = 'status error';
   }
 }
