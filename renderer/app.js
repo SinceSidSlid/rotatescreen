@@ -205,7 +205,7 @@
     slides = [];
     for (const slide of rawSlides) {
       if (slide.type === 'note') {
-        const pages = splitNoteBody(slide.body, slide.title);
+        const pages = splitNoteBody(slide.body.replace(/\n/g, '<br>'), slide.title);
         for (const pageHTML of pages) {
           slides.push({ ...slide, body: pageHTML });
         }
@@ -250,7 +250,7 @@
 
         const body = document.createElement('div');
         body.className = 'note-body';
-        body.innerHTML = slide.body;
+        body.innerHTML = slide.body.replace(/\n/g, '<br>');
 
         card.appendChild(title);
         card.appendChild(body);
