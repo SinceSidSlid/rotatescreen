@@ -193,7 +193,7 @@ function managementHTML(port) {
   <div class="editor-container">
     <div id="new-body-editor"></div>
   </div>
-  <button class="btn-add" onclick="addNote()">Add Note</button>
+  <button class="btn-add" onclick="addNote()">&#43; Add Note</button>
 </div>
 
 <h2>Config</h2>
@@ -204,7 +204,7 @@ function managementHTML(port) {
   <input type="number" id="cfg-note-interval" min="5">
   <label>Calendar Embed URL</label>
   <input type="text" id="cfg-calendar">
-  <button class="btn-save" style="margin-top:12px" onclick="saveConfig()">Save Config</button>
+  <button class="btn-save" style="margin-top:12px" onclick="saveConfig()">&#128190; Save Config</button>
   <div id="config-status" class="status"></div>
 </div>
 
@@ -212,8 +212,8 @@ function managementHTML(port) {
 <div class="config-section">
   <p id="update-info" style="font-size:14px;color:#666;">Click below to check for updates.</p>
   <div style="display:flex;gap:8px;margin-top:12px;">
-    <button class="btn-save" onclick="checkUpdate()">Check for Updates</button>
-    <button class="btn-add" id="apply-btn" onclick="applyUpdate()" style="display:none;">Apply Update &amp; Restart</button>
+    <button class="btn-save" onclick="checkUpdate()">&#128269; Check for Updates</button>
+    <button class="btn-add" id="apply-btn" onclick="applyUpdate()" style="display:none;">&#9889; Apply Update &amp; Restart</button>
   </div>
   <div id="update-status" class="status"></div>
 </div>
@@ -266,8 +266,8 @@ async function loadNotes() {
         <div class="note-body-editor" id="body-editor-\${n.id}"></div>
       </div>
       <div class="actions">
-        <button class="btn-save" onclick="saveNote('\${n.id}', this)">Save</button>
-        <button class="btn-delete" onclick="deleteNote('\${n.id}')">Delete</button>
+        <button class="btn-save" onclick="saveNote('\${n.id}', this)">&#128190; Save</button>
+        <button class="btn-delete" onclick="deleteNote('\${n.id}')">&#128465; Delete</button>
       </div>
     </div>
   \`).join('');
