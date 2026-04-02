@@ -74,6 +74,21 @@ function startServer(port) {
       res.json({ ok: true });
     });
 
+    // Reorder notes
+    app.put('/api/notes/:id/move', (req, res) => {
+      const notes = readJSON(NOTES_PATH);
+      const idx = notes.findIndex((n) => n.id === req.params.id);
+      if (idx === -1) return res.status(404).json({ error: 'Not found' });
+      const direction = req.body.direction; // 'up' or 'down'
+      const newIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (newIdx < 0 || newIdx >= notes.length) return res.json({ ok: true });
+      const temp = notes[idx];
+      notes[idx] = notes[newIdx];
+      notes[newIdx] = temp;
+      writeJSON(NOTES_PATH, notes);
+      res.json({ ok: true });
+    });
+
     // Config API
     app.get('/api/config', (req, res) => {
       res.json(readJSON(CONFIG_PATH));
@@ -160,6 +175,8 @@ function managementHTML(port) {
   .btn-save:hover { background: #1d4ed8; }
   .btn-delete { background: #dc2626; color: #fff; }
   .btn-delete:hover { background: #b91c1c; }
+  .btn-move { background: #e5e7eb; color: #333; padding: 8px 10px; }
+  .btn-move:hover { background: #d1d5db; }
   .btn-add { background: #16a34a; color: #fff; margin-top: 8px; }
   .btn-add:hover { background: #15803d; }
   #new-note { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
@@ -268,6 +285,8 @@ async function loadNotes() {
         <div class="note-body-editor" id="body-editor-\${n.id}"></div>
       </div>
       <div class="actions">
+        <button class="btn-move" onclick="moveNote('\${n.id}', 'up')"><i class="icon-lucide icon-arrow-up"></i></button>
+        <button class="btn-move" onclick="moveNote('\${n.id}', 'down')"><i class="icon-lucide icon-arrow-down"></i></button>
         <button class="btn-save" onclick="saveNote('\${n.id}', this)"><i class="icon-lucide icon-save"></i> Save</button>
         <button class="btn-delete" onclick="deleteNote('\${n.id}')"><i class="icon-lucide icon-trash-2"></i> Delete</button>
       </div>
@@ -301,6 +320,15 @@ async function saveNote(id, btn) {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, body })
+  });
+  loadNotes();
+}
+
+async function moveNote(id, direction) {
+  await fetch('/api/notes/' + id + '/move', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ direction })
   });
   loadNotes();
 }
