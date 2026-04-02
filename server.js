@@ -109,7 +109,9 @@ function startServer(port) {
     // Pull updates and restart the app
     app.post('/api/update/apply', (req, res) => {
       try {
+        execSync('git stash', { cwd: __dirname, timeout: 5000 });
         const pullResult = execSync('git pull', { cwd: __dirname, timeout: 30000 }).toString();
+        try { execSync('git stash pop', { cwd: __dirname, timeout: 5000 }); } catch (e) { /* stash may be empty */ }
         execSync('npm install --production', { cwd: __dirname, timeout: 60000 });
         res.json({ success: true, output: pullResult.trim() });
         // Restart the app after a short delay to let the response send
