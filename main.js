@@ -19,8 +19,8 @@ function createWindow() {
     frame: isDev,
     kiosk: !isDev,
     autoHideMenuBar: true,
-    width: isDev ? 1024 : undefined,
-    height: isDev ? 768 : undefined,
+    width: isDev ? 1280 : undefined,
+    height: isDev ? 720 : undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

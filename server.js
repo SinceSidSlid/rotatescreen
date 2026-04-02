@@ -109,6 +109,7 @@ function managementHTML(port) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kiosk Management</title>
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; }
@@ -116,8 +117,11 @@ function managementHTML(port) {
   .address { font-size: 18px; color: #666; margin-bottom: 24px; font-family: monospace; background: #e8e8e8; display: inline-block; padding: 6px 14px; border-radius: 6px; }
   h2 { margin-top: 32px; margin-bottom: 12px; border-bottom: 2px solid #ddd; padding-bottom: 6px; }
   .note-card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-  .note-card input, .note-card textarea { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 14px; font-family: inherit; }
-  .note-card textarea { min-height: 60px; resize: vertical; margin-top: 8px; }
+  .note-card input { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 14px; font-family: inherit; }
+  .field-label { display: block; font-weight: 600; font-size: 14px; color: #555; margin-bottom: 4px; margin-top: 12px; }
+  .field-label:first-child { margin-top: 0; }
+  .note-card .editor-container { margin-top: 4px; }
+  .note-card .ql-container { min-height: 60px; font-size: 14px; }
   .note-card .actions { margin-top: 10px; display: flex; gap: 8px; }
   button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
   .btn-save { background: #2563eb; color: #fff; }
@@ -127,14 +131,19 @@ function managementHTML(port) {
   .btn-add { background: #16a34a; color: #fff; margin-top: 8px; }
   .btn-add:hover { background: #15803d; }
   #new-note { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
-  #new-note input, #new-note textarea { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 14px; font-family: inherit; }
-  #new-note textarea { min-height: 80px; resize: vertical; margin-top: 8px; }
+  #new-note input { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 14px; font-family: inherit; }
+  #new-note .editor-container { margin-top: 8px; }
+  #new-note .ql-container { min-height: 80px; font-size: 14px; }
   .config-section { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
   .config-section label { display: block; margin-top: 12px; font-weight: 600; }
   .config-section input { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 14px; margin-top: 4px; }
   .status { padding: 8px 12px; border-radius: 6px; margin-top: 10px; font-size: 14px; display: none; }
   .status.success { display: block; background: #dcfce7; color: #166534; }
   .status.error { display: block; background: #fee2e2; color: #991b1b; }
+  .ql-picker.ql-header .ql-picker-label[data-value=""]::before,
+  .ql-picker.ql-header .ql-picker-item[data-value=""]::before,
+  .ql-picker.ql-header .ql-picker-label:not([data-value])::before,
+  .ql-picker.ql-header .ql-picker-item:not([data-value])::before { content: 'Body' !important; }
 </style>
 </head>
 <body>
@@ -146,8 +155,14 @@ function managementHTML(port) {
 
 <h2>Add Note</h2>
 <div id="new-note">
-  <input type="text" id="new-title" placeholder="Title">
-  <textarea id="new-body" placeholder="Body text"></textarea>
+  <label class="field-label">Title</label>
+  <div class="editor-container">
+    <div id="new-title-editor"></div>
+  </div>
+  <label class="field-label">Body</label>
+  <div class="editor-container">
+    <div id="new-body-editor"></div>
+  </div>
   <button class="btn-add" onclick="addNote()">Add Note</button>
 </div>
 
@@ -163,29 +178,83 @@ function managementHTML(port) {
   <div id="config-status" class="status"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 <script>
+const quillToolbar = [
+  [{ 'size': ['small', false, 'large', 'huge'] }],
+  [{ 'header': [1, 2, 3, false] }],
+  ['bold', 'italic', 'underline', 'strike'],
+  [{ 'color': [] }, { 'background': [] }],
+  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+  [{ 'align': [] }],
+  ['clean']
+];
+
+// Track Quill instances for existing notes
+const noteTitleEditors = {};
+const noteBodyEditors = {};
+
+let newTitleEditor = new Quill('#new-title-editor', {
+  theme: 'snow',
+  modules: { toolbar: quillToolbar },
+  placeholder: 'Title...'
+});
+
+let newBodyEditor = new Quill('#new-body-editor', {
+  theme: 'snow',
+  modules: { toolbar: quillToolbar },
+  placeholder: 'Body text...'
+});
+
 async function loadNotes() {
   const res = await fetch('/api/notes');
   const notes = await res.json();
   const list = document.getElementById('notes-list');
+
+  // Clear old editors
+  Object.keys(noteTitleEditors).forEach(k => delete noteTitleEditors[k]);
+  Object.keys(noteBodyEditors).forEach(k => delete noteBodyEditors[k]);
+
   list.innerHTML = notes.map(n => \`
     <div class="note-card" data-id="\${n.id}">
-      <input type="text" value="\${esc(n.title)}" class="note-title">
-      <textarea class="note-body">\${esc(n.body)}</textarea>
+      <label class="field-label">Title</label>
+      <div class="editor-container">
+        <div class="note-title-editor" id="title-editor-\${n.id}"></div>
+      </div>
+      <label class="field-label">Body</label>
+      <div class="editor-container">
+        <div class="note-body-editor" id="body-editor-\${n.id}"></div>
+      </div>
       <div class="actions">
         <button class="btn-save" onclick="saveNote('\${n.id}', this)">Save</button>
         <button class="btn-delete" onclick="deleteNote('\${n.id}')">Delete</button>
       </div>
     </div>
   \`).join('');
+
+  // Initialize Quill for each note
+  notes.forEach(n => {
+    const titleEditor = new Quill('#title-editor-' + n.id, {
+      theme: 'snow',
+      modules: { toolbar: quillToolbar }
+    });
+    titleEditor.root.innerHTML = n.title;
+    noteTitleEditors[n.id] = titleEditor;
+
+    const bodyEditor = new Quill('#body-editor-' + n.id, {
+      theme: 'snow',
+      modules: { toolbar: quillToolbar }
+    });
+    bodyEditor.root.innerHTML = n.body;
+    noteBodyEditors[n.id] = bodyEditor;
+  });
 }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 async function saveNote(id, btn) {
-  const card = btn.closest('.note-card');
-  const title = card.querySelector('.note-title').value;
-  const body = card.querySelector('.note-body').value;
+  const title = noteTitleEditors[id].root.innerHTML;
+  const body = noteBodyEditors[id].root.innerHTML;
   await fetch('/api/notes/' + id, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -201,16 +270,17 @@ async function deleteNote(id) {
 }
 
 async function addNote() {
-  const title = document.getElementById('new-title').value.trim();
-  const body = document.getElementById('new-body').value.trim();
-  if (!title && !body) return;
+  const title = newTitleEditor.root.innerHTML;
+  const body = newBodyEditor.root.innerHTML;
+  const isEmpty = newTitleEditor.getText().trim() === '' && newBodyEditor.getText().trim() === '';
+  if (isEmpty) return;
   await fetch('/api/notes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, body })
   });
-  document.getElementById('new-title').value = '';
-  document.getElementById('new-body').value = '';
+  newTitleEditor.setText('');
+  newBodyEditor.setText('');
   loadNotes();
 }
 
