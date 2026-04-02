@@ -1,6 +1,0 @@
-{
-  "calendarIntervalSeconds": 5,
-  "noteIntervalSeconds": 5,
-  "calendarEmbedUrl": "https://calendar.google.com/calendar",
-  "port": 3000
-}
